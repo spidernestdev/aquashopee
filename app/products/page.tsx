@@ -1,12 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { allProducts } from '@/app/data/products';
 import ProductCard from '@/app/components/ProductCard';
 import { FiFilter, FiX } from 'react-icons/fi';
 
-export default function ProductsPage() {
+function ProductsPageContent() {
   const searchParams = useSearchParams();
   const [filteredProducts, setFilteredProducts] = useState(allProducts);
   const [showFilters, setShowFilters] = useState(false);
@@ -14,53 +15,44 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<'low-to-high' | 'high-to-low' | ''>('');
   const [priceRange, setPriceRange] = useState<[number, number]>([1, 2000]);
 
-  // Get all unique categories
   const categories = [...new Set(allProducts.map(p => p.category))];
 
-  // Filter and sort products
-// Filter and sort products
 useEffect(() => {
   let result = [...allProducts];
 
-  // Get all filter params from URL
   const categoriesParam = searchParams.get('categories');
   const sortParam = searchParams.get('sort') as 'low-to-high' | 'high-to-low' | '';
-let minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : 1;
-let maxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : 2000;
 
-// Ensure minPrice is at least 1
-if (minPrice < 1) minPrice = 1;
-if (maxPrice < 0) maxPrice = 2000;
+  let minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : 1;
+  let maxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : 2000;
 
-  // Update state from URL
+  if (minPrice < 1) minPrice = 1;
+  if (maxPrice < 0) maxPrice = 2000;
+
   if (categoriesParam) {
     setSelectedCategories(categoriesParam.split(','));
   } else {
     setSelectedCategories([]);
   }
-  
+
   if (sortParam) {
     setSortBy(sortParam);
   }
-  
+
   setPriceRange([minPrice, maxPrice]);
 
-  // SPECIAL CASE: If maxPrice is 0, show no products
   if (maxPrice === 0) {
     setFilteredProducts([]);
     return;
   }
 
-  // Apply category filter
   if (categoriesParam) {
     const categoryList = categoriesParam.split(',');
     result = result.filter(p => categoryList.includes(p.category));
   }
 
-  // Apply price range filter
   result = result.filter(p => p.price >= minPrice && p.price <= maxPrice);
 
-  // Apply sorting
   if (sortParam === 'low-to-high') {
     result.sort((a, b) => a.price - b.price);
   } else if (sortParam === 'high-to-low') {
@@ -68,52 +60,51 @@ if (maxPrice < 0) maxPrice = 2000;
   }
 
   setFilteredProducts(result);
+
 }, [searchParams]);
 
-  // Update URL with filters
   const updateFilters = (categories: string[], sort: string, min: number, max: number) => {
     const params = new URLSearchParams();
-    
+
     if (categories.length > 0) {
       params.set('categories', categories.join(','));
     }
     if (sort) {
       params.set('sort', sort);
     }
+
     params.set('minPrice', min.toString());
     params.set('maxPrice', max.toString());
-    
+
     window.history.pushState({}, '', `/products?${params.toString()}`);
   };
 
-  // Handle category change
   const handleCategoryChange = (category: string, checked: boolean) => {
     let newCategories;
+
     if (checked) {
       newCategories = [...selectedCategories, category];
     } else {
       newCategories = selectedCategories.filter(c => c !== category);
     }
+
     setSelectedCategories(newCategories);
     updateFilters(newCategories, sortBy, priceRange[0], priceRange[1]);
   };
 
-  // Handle sort change
   const handleSortChange = (sort: 'low-to-high' | 'high-to-low' | '') => {
     setSortBy(sort);
     updateFilters(selectedCategories, sort, priceRange[0], priceRange[1]);
   };
 
-  // Handle price range change
 const handlePriceChange = (min: number, max: number) => {
-  // Ensure min is at least 1
   const safeMin = Math.max(1, min);
   const safeMax = Math.max(safeMin, max);
-  
+
   setPriceRange([safeMin, safeMax]);
   updateFilters(selectedCategories, sortBy, safeMin, safeMax);
 };
-  // Clear all filters
+
   const clearFilters = () => {
     setSelectedCategories([]);
     setSortBy('');
@@ -124,7 +115,7 @@ const handlePriceChange = (min: number, max: number) => {
   return (
     <main className="py-8 md:py-12 bg-white">
       <div className="container-custom">
-        {/* Header with Filter Button */}
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-navy border-b-4 border-navy pb-2 inline-block">
@@ -134,8 +125,7 @@ const handlePriceChange = (min: number, max: number) => {
               {filteredProducts.length} products found
             </p>
           </div>
-          
-          {/* Filter Button */}
+
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 bg-navy text-white px-4 py-2 rounded-lg hover:bg-gold hover:text-navy transition-colors"
@@ -150,7 +140,6 @@ const handlePriceChange = (min: number, max: number) => {
           </button>
         </div>
 
-        {/* Filters Panel */}
         {showFilters && (
           <div className="bg-gray-50 rounded-xl p-6 mb-8 border border-gray-200">
             <div className="flex items-center justify-between mb-4">
@@ -164,7 +153,7 @@ const handlePriceChange = (min: number, max: number) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Category Filter - Changed to Checkboxes */}
+
               <div>
                 <h4 className="font-semibold text-navy mb-3">Categories</h4>
                 <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -182,7 +171,6 @@ const handlePriceChange = (min: number, max: number) => {
                 </div>
               </div>
 
-              {/* Sort By */}
               <div>
                 <h4 className="font-semibold text-navy mb-3">Sort By Price</h4>
                 <div className="space-y-2">
@@ -196,6 +184,7 @@ const handlePriceChange = (min: number, max: number) => {
                     />
                     Default
                   </label>
+
                   <label className="flex items-center gap-2 text-sm text-gray-700">
                     <input
                       type="radio"
@@ -206,6 +195,7 @@ const handlePriceChange = (min: number, max: number) => {
                     />
                     Price: Low to High
                   </label>
+
                   <label className="flex items-center gap-2 text-sm text-gray-700">
                     <input
                       type="radio"
@@ -219,7 +209,6 @@ const handlePriceChange = (min: number, max: number) => {
                 </div>
               </div>
 
-              {/* Price Range */}
 <div className="md:col-span-2">
   <h4 className="font-semibold text-navy mb-3">Price Range</h4>
   <div className="flex items-center gap-4">
@@ -230,23 +219,27 @@ const handlePriceChange = (min: number, max: number) => {
       value={priceRange[1]}
       onChange={(e) => {
         const maxVal = parseInt(e.target.value);
-        // Force min to always be 1
+
         setPriceRange([1, maxVal]);
-        
-        // Update URL with min=1
+
         const params = new URLSearchParams();
+
         if (selectedCategories.length > 0) {
           params.set('categories', selectedCategories.join(','));
         }
+
         if (sortBy) {
           params.set('sort', sortBy);
         }
+
         params.set('minPrice', '1');
         params.set('maxPrice', maxVal.toString());
+
         window.history.pushState({}, '', `/products?${params.toString()}`);
       }}
       className="w-full"
     />
+
     <div className="flex items-center gap-2 text-sm bg-white px-3 py-1 rounded-lg border border-gray-200">
       <span className="font-medium">₹1</span>
       <span>-</span>
@@ -254,9 +247,9 @@ const handlePriceChange = (min: number, max: number) => {
     </div>
   </div>
 </div>
+
             </div>
 
-            {/* Clear Filters */}
             <div className="mt-4 pt-4 border-t border-gray-200">
               <button
                 onClick={clearFilters}
@@ -268,7 +261,6 @@ const handlePriceChange = (min: number, max: number) => {
           </div>
         )}
 
-        {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500">No products found</p>
@@ -280,7 +272,16 @@ const handlePriceChange = (min: number, max: number) => {
             ))}
           </div>
         )}
+
       </div>
     </main>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center">Loading products...</div>}>
+      <ProductsPageContent />
+    </Suspense>
   );
 }
