@@ -167,17 +167,12 @@ const handleSearch = (value: string) => {
   }, 10);
 };
 
-  // Scroll to product
-  const scrollToProduct = (productId: string) => {
-    const element = document.getElementById(`product-${productId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setShowSuggestions(false);
-      setSearchTerm('');
-    } else {
-      router.push(`/products#product-${productId}`);
-    }
-  };
+// Scroll to product
+const scrollToProduct = (productId: string) => {
+  router.push(`/products#product-${productId}`);
+  setShowSuggestions(false);
+  setSearchTerm('');
+};
 
   // Apply filters
   const applyFilters = () => {
@@ -324,11 +319,12 @@ const handleSearch = (value: string) => {
               {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 max-h-96 overflow-y-auto z-50">
                   {suggestions.map((product) => (
-                    <button
-                      key={product.id}
-                      onClick={() => scrollToProduct(product.id)}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3"
-                    >
+<div
+  key={product.id}
+  onClick={() => scrollToProduct(product.id)}
+  className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 cursor-pointer"
+>
+  
                       <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden">
                         <Image 
                           src={product.image}
@@ -342,7 +338,7 @@ const handleSearch = (value: string) => {
                         <p className="text-sm font-medium text-navy">{product.name}</p>
                         <p className="text-xs text-gray-500">₹{product.price}</p>
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -743,7 +739,7 @@ const handleSearch = (value: string) => {
         </div>
 
 {/* Mobile Search with Filter */}
-<div className="sm:hidden mt-3">
+<div className="sm:hidden mt-3 relative" ref={searchRef}>
   <div className="flex items-center gap-2">
     <div className="relative flex-1">
       <input 

@@ -63,6 +63,35 @@ useEffect(() => {
 
 }, [searchParams]);
 
+// Handle scroll to product from hash
+useEffect(() => {
+  if (window.location.hash) {
+    const id = window.location.hash.replace('#product-', '');
+    
+    // Wait for products to render
+    const scrollToProduct = () => {
+      const element = document.getElementById(`product-${id}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Highlight the product temporarily
+        element.style.transition = 'background-color 0.5s';
+        element.style.backgroundColor = '#fef3c7';
+        setTimeout(() => {
+          element.style.backgroundColor = '';
+        }, 1000);
+      }
+    };
+
+    // Try immediately
+    scrollToProduct();
+    
+    // Also try after products load
+    const timeout = setTimeout(scrollToProduct, 500);
+    
+    return () => clearTimeout(timeout);
+  }
+}, [filteredProducts]); // Run when products are loaded
+
   const updateFilters = (categories: string[], sort: string, min: number, max: number) => {
     const params = new URLSearchParams();
 
@@ -267,9 +296,11 @@ const handlePriceChange = (min: number, max: number) => {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+{filteredProducts.map((product) => (
+  <div id={`product-${product.id}`} key={product.id}>
+    <ProductCard product={product} />
+  </div>
+))}
           </div>
         )}
 
