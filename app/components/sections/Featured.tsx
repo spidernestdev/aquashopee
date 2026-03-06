@@ -47,14 +47,15 @@ const Featured = () => {
             <>
               <button 
                 onClick={() => scroll('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white shadow-lg hover:bg-navy hover:text-white transition-colors"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white border border-black shadow-lg hover:bg-navy hover:text-white transition-colors"
                 aria-label="Scroll left"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
+
               <button 
                 onClick={() => scroll('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white shadow-lg hover:bg-navy hover:text-white transition-colors"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white border border-black shadow-lg hover:bg-navy hover:text-white transition-colors"
                 aria-label="Scroll right"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -67,11 +68,31 @@ const Featured = () => {
             className="flex overflow-x-auto gap-4 pb-4 scroll-smooth hide-scrollbar snap-x"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {featuredProducts.map((product) => (
-              <div key={product.id} className="flex-none w-64 sm:w-72 snap-center">
-                <ProductCard product={product} />
-              </div>
-            ))}
+
+            {/* Mobile → 2 cards snap */}
+            <div className="flex sm:hidden w-full">
+              {Array.from({ length: Math.ceil(featuredProducts.length / 2) }).map((_, i) => (
+                <div key={i} className="flex-none w-full snap-center">
+                  <div className="flex gap-4">
+                    {featuredProducts.slice(i * 2, i * 2 + 2).map((product) => (
+                      <div key={product.id} className="w-1/2">
+                        <ProductCard product={product} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop → original layout */}
+            <div className="hidden sm:flex gap-5">
+              {featuredProducts.map((product) => (
+                <div key={product.id} className="flex-none w-64 sm:w-72 snap-center">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       </div>

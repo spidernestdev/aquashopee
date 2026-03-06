@@ -18,7 +18,7 @@ const HorizontalScroll = ({ title, items, type, viewAllLink }: Props) => {
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const scrollAmount = 300;
+      const scrollAmount = scrollRef.current.clientWidth;
       scrollRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -79,17 +79,18 @@ const HorizontalScroll = ({ title, items, type, viewAllLink }: Props) => {
         {/* Scrollable Container */}
         <div 
           ref={scrollRef}
-          className="flex overflow-x-auto gap-4 pb-4 scroll-smooth hide-scrollbar snap-x"
+          className="flex overflow-x-auto gap-4 pb-4 scroll-smooth hide-scrollbar snap-x snap-mandatory"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {items.map((item, index) => (
-            <div 
-              key={item.id || index} 
-              className="flex-none w-70 sm:w-75 snap-center"
-            >
-              {renderCard(item, index)}
-            </div>
-          ))}
+{Array.from({ length: Math.ceil(items.length / 2) }).map((_, i) => (
+  <div key={i} className="flex-none w-full snap-center">
+    <div className="grid grid-cols-2 gap-4">
+      {items.slice(i * 2, i * 2 + 2).map((item, index) =>
+        renderCard(item, index)
+      )}
+    </div>
+  </div>
+))}
         </div>
       </div>
 
